@@ -6,16 +6,18 @@ Sobel kerns
 dx = -2 0 2    dy = 0  0  0
      -1 0 1         1  2  1
 """
-def sobel_dx(img):
+#returns 2d array of Sobel Values and writes a normalized image out
+def sobel_dx(img,f="test"):
 	width = img.size[0]
 	height = img.size[1]
 	dx = [[-1,0,1],[-2,0,2],[-1,0,1]]
+	sob_vals = []
 	#Everything is equal
 	out_dx = Image.new('L', (width, height)) # Create a blank image
 	pix_dx = out_dx.load()
 	for y in xrange(height):
+		sob_vals.append([])
 		for x in xrange(width):
-			pix_dx[x,y] = 50
 
 			num_avgs = 8
 			sum_dx = 0
@@ -31,17 +33,22 @@ def sobel_dx(img):
 						pass
 					k_x_offset = k_x_offset+1
 				k_y_offset = k_y_offset+1
+			pix_val = sum_dx/num_avgs
+			sob_vals[y].append(pix_val)
+			pix_dx[x,y] = (pix_val/2)+127
+	#out_dx.show()
+	out_dx.save("{0}sobel_dx.png".format(f))
+	return sob_vals
 
-			pix_dx[x,y] =pix_dx[x,y] + int(sum_dx/num_avgs)
-	return out_dx
-
-def sobel_dy(img):
+def sobel_dy(img, f="test"):
 	width = img.size[0]
 	height = img.size[1]
 	dy = [[-1,-2,-1],[0,0,0],[1,2,1]]
 	out_dy = Image.new('L', (width, height)) # Create a blank image
 	pix_dy = out_dy.load()
+	sob_vals = []
 	for y in xrange(height):
+		sob_vals.append([])
 		for x in xrange(width):
 			pix_dy[x,y] = 50
 			num_avgs = 8
@@ -57,9 +64,24 @@ def sobel_dy(img):
 						pass
 					k_x_offset = k_x_offset+1
 				k_y_offset = k_y_offset+1
-			pix_dy[x,y] =pix_dy[x,y] + int(sum_dy/num_avgs)
-	return out_dy
+			pix_val = sum_dy/num_avgs
+			sob_vals[y].append( pix_val)
+			pix_dy[x,y] = (pix_val/2)+127
+	#out_dy.show()
+	out_dy.save("{0}sobel_dy.png".format(f))
+	return sob_vals
 
+def combine_sobels(dx,dy, f="test"):
+		from math import sqrt
+		width = len(dx[0])
+		height = len(dx)
+		combined = Image.new('L', (width, height)) # Create a blank image
+		comb = combined.load()
+		for y in xrange(height):
+			for x in xrange(width):
+				comb[x,y] = sqrt((dy[y][x]*dy[y][x])+(dx[y][x]*dx[y][x]))
+		#combined.show()
+		combined.save("{0}combined.png".format(f))
 
 def number1():
 	"""
@@ -94,9 +116,9 @@ def number1():
 		out_img.save("uniformAvgK_size%i.png"%k_size)
 
 
-	sobel_dy(img).save("1sobeldy.png")
-	sobel_dx(img).save("1sobeldx.png")
-
+	dy = sobel_dy(img,"num1")
+	dx = sobel_dx(img,"num1")
+	combine_sobels(dx,dy,"num1")
 	"""
 			   0  1 0
 	Laplacian: 1 -4 1
@@ -108,7 +130,7 @@ def number1():
 	pixels = out_img.load()
 	for y in xrange(height):
 		for x in xrange(width):
-			pixels[x,y] = 50
+			
 			k_y_offset = -1
 			sum = 0
 			offset = 1
@@ -122,7 +144,7 @@ def number1():
 					k_x_offset= k_x_offset+1
 
 				k_y_offset = k_y_offset+1
-			pixels[x,y] = pixels[x,y]+int(sum)
+			pixels[x,y] = int(sum/4)+127
 	out_img.save("Laplacian.png")
 
 """2.Use the Sobel kernels to calculate gradient magnitude images for the input images 2D_White_Box.pgm and blocks.pgm.
@@ -130,17 +152,10 @@ def number1():
 def number2():
 	for f in ["2D_White_Box.pgm","blocks.pgm"]:
 		img = Image.open(f)
-		width = img.size[0]
-		height = img.size[1]
-		combined = Image.new('L', (width, height)) # Create a blank image
-		out_dx = sobel_dx(img)
-		out_dy = sobel_dy(img)
-		comb = combined.load()
-		for y in xrange(height):
-			for x in xrange(width):
-				comb[x,y] = out_dy.getpixel((x,y))+out_dx.getpixel((x,y))
-		combined.show()
-		combined.save("{0}combined.png".format(f[1]))
+		dy = sobel_dy(img,f[:2])
+		dx = sobel_dx(img,f[:2])
+		combine_sobels(dx,dy,f[:2])
+
 
 
 """3.Again calculate the gradient magnitude image for the input image blocks.pgm, but blur the image first by a uniform 
@@ -166,17 +181,10 @@ def number3():
 							sum = sum + img.getpixel((box_x,box_y))
 						except Exception, e:
 							pass
-				pixels[x,y]=int(sum/num_avgs)
-		blurred.show()
-		combined = Image.new('L', (width, height)) # Create a blank image
-		out_dx = sobel_dx(blurred)
-		out_dy = sobel_dy(blurred)
-		comb = combined.load()
-		for y in xrange(height):
-			for x in xrange(width):
-				comb[x,y] = out_dy.getpixel((x,y))+out_dx.getpixel((x,y))
-		combined.show()
-		combined.save("3k{0}combined.png".format(k_size))
+				pixels[x,y]=int(sum/num_avgs)		
+		out_dx = sobel_dx(blurred,"k-{0}".format(str(k_size)))
+		out_dy = sobel_dy(blurred,"k-{0}".format(str(k_size)))
+		combine_sobels(out_dx,out_dy,"k-{0}".format(str(k_size)))
 
 
 """4.Use unsharp masking to sharpen the blocks.pgm image. Try adjusting the sharpening strength and/or
