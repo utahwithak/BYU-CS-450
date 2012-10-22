@@ -1,2 +1,8 @@
 *.DS_Store
 *.png
+*.pgm
+*.pages
+*.docx
+*.doc
+*.pyc
+*.pdf
