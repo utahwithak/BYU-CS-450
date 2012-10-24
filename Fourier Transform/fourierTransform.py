@@ -109,16 +109,25 @@ def part5():
 	inputVals = []
 	for line in dataFile:
 		inputVals.append(float(line.strip()))
+	fOfU = np.fft.fft(inputVals)
+	
 	dataFile = open("/Users/cwieland/Projects/CS Projects/450/Fourier Transform/1D_Output128.dat","r");
 	outVals = []
 	for line in dataFile:
 		outVals.append(float(line.strip()))
+	gOfU = np.fft.fft(outVals)
+
+
 	hOfU = []
-	for x, y in zip(inputVals,outVals):
+	reals = []
+	for x, xi, y, yi in zip(fOfU.real,fOfU.imag,gOfU.real,gOfU.imag):
 		if x < .001:
 			hOfU.append(0)
+			reals.append(0)
 		else:
-			hOfU.append(y/x)
+			val = complex(y,yi)/complex(x,xi)
+			hOfU.append(val)
+			reals.append(val.real)
 
 	t = np.arange(len(hOfU))
 	sp = np.fft.ifft(hOfU)
@@ -126,7 +135,7 @@ def part5():
 	plt.title("H(u)")
 
 		#calculate magnitude
-	plt.plot(freq,hOfU)
+	plt.plot(reals)
 	plt.show()
 	magnitude = []
 	for x,y in zip(sp.real,sp.imag):
