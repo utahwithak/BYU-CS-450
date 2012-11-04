@@ -67,14 +67,9 @@ def partB():
         for x in xrange(width):
             f[y].append(dat.getpixel((x,y)))
 
-            if x+y <= ksize:#topleft
-                kern[y].append(1)
-            elif (width-1 - x)+y <=ksize:#topright
-                kern[y].append(1)
-            elif (x+(height-1-y)) <= ksize:#bottomleft
-                kern[y].append(1)
-            elif (width - 1-x)+(height-1-y) <= ksize:#bottomright
-                kern[y].append(1)
+            if x >= ((width-ksize)/2):#topleft
+                if y>=((height-ksize)/2):
+                    kern[y].append(1)
             else:
                 kern[y].append(0)
     F = np.fft.fft2(f)
