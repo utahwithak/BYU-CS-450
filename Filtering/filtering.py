@@ -54,22 +54,33 @@ Be careful to keep in mind where the origin (center)
 of the kernel/filter is. Think about what happens if
 you don't position the kernel correctly.
 """
+def kernal(width, height, x, y):
+    ksize = 5
+    if x + y<ksize:#top Left
+        return True
+    elif ((width-x)+y) -1<ksize:#top right
+        return True
+    elif (x+(height - y))-1<ksize:#bottom left
+        return True
+    elif (width-x)+(height-y)-2<ksize:
+        return True
+    else:
+        return False
+
+
 def partB():
     dat = Image.open("2D_White_Box.pgm")
     height = dat.size[1]
     width = dat.size[0]
     f = []
     kern = []
-    ksize = 9
     for y in xrange(height):
         f.append([])
         kern.append([])
         for x in xrange(width):
             f[y].append(dat.getpixel((x,y)))
-
-            if x >= ((width-ksize)/2):#topleft
-                if y>=((height-ksize)/2):
-                    kern[y].append(1)
+            if kernal(width,height,x,y):
+                kern[y].append(1)
             else:
                 kern[y].append(0)
     F = np.fft.fft2(f)
@@ -84,9 +95,10 @@ def partB():
     h = np.fft.ifft2(H)
     out_image = Image.new('L', (width, height))
     pix_dx = out_image.load()
+    norms = width*height
     for y in xrange(height):
         for x in xrange(width):
-            pix_dx[x,y]=h[y][x].real
+            pix_dx[x,y] = (h[y][x].real/norms)*127
     out_image.show()
 """
 C. Interference Pattern
@@ -108,8 +120,55 @@ missing can be just as bad as having too much of it.
 Try to estimate a reasonable magnitude using similar frequencies.
 """
 def partC():
-    pass
-
+    dat = Image.open("interfere.pgm")
+    dat.show()
+    height = dat.size[1]
+    width = dat.size[0]
+    f = []
+    for y in xrange(height):
+        f.append([])
+        for x in xrange(width):
+            f[y].append(dat.getpixel((x,y)))
+    F = np.fft.fft2(f)
+    mags = []
+    for y in xrange(height):
+        mags.append([])
+        for x in xrange(width):
+            mags[y].append(((sqrt(F[y][x].real**2+F[y][x].imag**2)/(width*height))*127)+127)
+    #find the outliers
+    freqs=[]
+    for y in xrange(height/2):
+        for x in xrange(width/2):
+            try:
+                v = mags[y][x]
+                up = mags[y+1][x]
+                down = mags[y-1][x]
+                left = mags[y][x-1]
+                right = mags[y][x+1]
+                avg = (up+down+left+right)/4
+                if v > (avg*4):
+                    up = F[y+1][x]
+                    down = F[y-1][x]
+                    left = F[y][x-1]
+                    right = F[y][x+1]
+                    avg = (up+down+left+right)/4
+                    F[y][x] = avg
+                    F[height-y][width-x]=avg
+            except:
+                pass
+    h = np.fft.ifft2(F)
+    #freq_image = Image.new('L', (width, height))
+    #freq_pix = freq_image.load()
+    out_image = Image.new('L', (width, height))
+    pix_dx = out_image.load()
+    for y in xrange(height):
+        for x in xrange(width):
+            #freq_pix[x,y] = ((sqrt(F[y][x].real**2+F[y][x].imag**2)/(width*height))*127)+127
+            pix_dx[x,y]=h[y][x].real
+    out_image.show()
+    out_image.save("ReducedFilter.png")
+    #freq_image.show()
+        
 #partA()
-partB()
+#partB()
 partC()
