@@ -100,6 +100,7 @@ def partB():
         for x in xrange(width):
             pix_dx[x,y] = (h[y][x].real/norms)*127
     out_image.show()
+    out_image.save("Average.png")
 """
 C. Interference Pattern
 
@@ -170,5 +171,5 @@ def partC():
     #freq_image.show()
         
 #partA()
-#partB()
-partC()
+partB()
+#partC()
