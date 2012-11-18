@@ -96,6 +96,7 @@ def mag(img, f):
             out_pix[x,y]=interp
             #print points
     out_img.show()
+    return out_img
 
 
 """
@@ -129,6 +130,7 @@ def shrink(img, f):
             out_pix[x,y]=interp
             #print points
     out_img.show()
+    return out_img
 
 
 """3)Write a program that rotates an image around its center by a specified
@@ -137,28 +139,106 @@ angle. The transformation for rotation by angle t around point (xc, yc) is
 x' = (x - xc) cos t - (y - yc) sin t + xc
 y' = (x - xc) sin t + (y - yc) cos t + yc
 
-Use the backwards warping algorithm and bilinear interpolation as discussed in class. You may choose any image you wish to test and demonstrate your code.
-Apply your method to the image in 15 degree increments to rotate the image by 120 degrees. Compare this to rotating directly by 120 degrees. What happens? Why?
+Use the backwards warping algorithm and bilinear interpolation as discussed in class.
+You may choose any image you wish to test and demonstrate your code.
+Apply your method to the image in 15 degree increments to rotate the
+image by 120 degrees. Compare this to rotating directly by 120 degrees.
+What happens? Why?
 """
+def rotate(img, ang):
+    out_img = Image.new('L',img.size)
+    pix_dat = img.load()
+    out_pix = out_img.load()
+    width = out_img.size[0]
+    height = out_img.size[1]
+    xc =width/2
+    yc =height/2
+    #import pdb; pdb.set_trace()
+    for y in range(height):
+        for x in range(width):
+            x0 = (x-xc)*math.cos(ang)-(y-yc)*math.sin(ang)+xc
+            y0 = (x-xc)*math.sin(ang)+(y-yc)*math.cos(ang)+yc
+            fx0 = math.ceil(x0)#lower x
+            fy0 = math.ceil(y0)#lower y
+            cx0 = math.floor(x0)#upper x
+            cy0 = math.floor(y0)#upper y
+            #print x0,y0,fx0,fy0,cx0,cy0
+
+            try:
+                pointa = (fx0,fy0,pix_dat[fx0,fy0])
+            except:
+                pointa = (fx0,fy0,0)            
+            try:
+                pointb = (fx0,cy0,pix_dat[fx0,cy0])
+            except:
+                pointb = (fx0,cy0,0)
+            try:
+                pointc = (cx0,fy0,pix_dat[cx0,fy0])
+            except:
+                pointc = (cx0,fy0,0)
+            try:
+                pointd = (cx0,cy0,pix_dat[cx0,cy0])
+            except:
+                pointd = (cx0,cy0,0)
+            points = [pointa,pointb,pointc,pointd]
+            #print points
+            try:
+                interp = bilinear_interpolation(x0,y0,points)
+                out_pix[x,y]=interp
+            except Exception, e:
+                out_pix[x,y]=0
+    out_img.show()
+    return out_img
+
+
+#homework 2:
+x=2.7
+y=4.8
+points = [(2,4,7),(2,5,8),(3,4,8),(3,5,10)]
+print bilinear_interpolation(x,y,points)
+
 img = Image.open("parrots.pgm")
 
 #Part 1
-mag(img,2)
-mag(img,3)
+mag(img,2).save("parrots2.png")
+mag(img,3).save("parrots3.png")
 
 #part 2
 
 
-shrink(img,4)
-shrink(img,8)
+shrink(img,4).save("parrots4.png")
+shrink(img,8).save("parrots8.png")
 imageTest3 = Image.open("imageTest3.pgm")
 imageTest4 = Image.open("imageTest4.pgm")
 imageTest2 = Image.open("imageTest2.pgm")
-shrink(imageTest2,4)
-shrink(imageTest2,8)
+shrink(imageTest2,4).save("imageTest2-4.png")
+shrink(imageTest2,8).save("imageTest2-8.png")
 
-shrink(imageTest3,4)
-shrink(imageTest3,8)
+shrink(imageTest3,4).save("imageTest3-4.png")
+shrink(imageTest3,8).save("imageTest3-8.png")
 
-shrink(imageTest4,4)
-shrink(imageTest4,8)
+shrink(imageTest4,4).save("imageTest4-4.png")
+shrink(imageTest4,8).save("imageTest4-8.png")
+
+#part 3
+rotor = Image.open("parrots.pgm")
+for x in xrange(0,8):
+    rotor = rotate(rotor,math.pi/12)
+    rotor.save("p{0}.png".format(x))
+roty = rotate(img,(2*math.pi)/3)
+roty.save("120direct.png")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

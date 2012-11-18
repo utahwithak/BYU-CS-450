@@ -80,7 +80,6 @@ include this plot in your write-up.
 
 """
 def part4():
-
 	#read in file
 	dataFile = open("/Users/cwieland/Projects/CS Projects/450/Fourier Transform/1D_Signal.dat","r");
 	data = []
@@ -90,19 +89,16 @@ def part4():
 	t = np.arange(len(data))
 	sp = np.fft.fft(data)
 	freqs = np.fft.fftfreq(t.shape[-1])
-	absVal = []
-	for val in freqs:
-		if abs(val) not in absVal:
-			absVal.append(abs(val))
-
-	#plot real
-	plt.plot(freqs, data)
-	plt.title("Real Values {0}".format("Signal"))
-	plt.show()
-
-	maxes = heapq.nlargest(3, absVal)
-	print maxes
-	
+	tops = []
+	for i in range(1,len(sp)/2-1):
+		#print sp[i]
+		if sp[i-1]<sp[i] and sp[i]>sp[i+1]: #check for local maxes
+			tops.append((sp[i],i))
+			print i,sp[i]
+	tops.sort() #sort the maxes
+	print tops.pop()#greatest
+	print tops.pop()#second greatest
+	print tops.pop()#third most prominent
 
 def part5():
 	dataFile = open("/Users/cwieland/Projects/CS Projects/450/Fourier Transform/1D_Rect128.dat","r");
@@ -154,8 +150,8 @@ t = np.arange(N)
 #part1(np.cos(2*pi*8*t/N) + 3*np.sin(2*pi*8*t/N),"cos(2*pi*8*t/N) + sin(2*pi*8*t/N)")
 #part2()
 #part3()
-#part4()
-part5()
+part4()
+#part5()
 
 
 
